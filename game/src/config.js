@@ -1,4 +1,4 @@
-// Tuning, palette, and field constants for 剑鸣江湖 / Sword Cry in the Jianghu.
+// Tuning, palette, and field constants for 剑啸江湖 / Sword Cry in the Jianghu.
 export const FIELD = { width: 1280, height: 720, groundY: 610 };
 export const STEP = 1 / 60;
 
@@ -10,11 +10,16 @@ export const PALETTE = {
   vermilion: '#c44536',
   vermilionDark: '#8f2e22',
   gold: '#d4a017',
+  goldBright: '#f4d35e',
   jade: '#2f7a5e',
   jadeDark: '#1f5642',
   mist: 'rgba(240, 236, 222, 0.35)',
   hudBg: 'rgba(26,24,20,0.55)',
   white: '#f7f3e8',
+  skyTop: '#7c4a2d',
+  skyMid: '#d07b46',
+  skyLow: '#f3d7a3',
+  sun: '#ffcf6b',
 };
 
 export const HERO = {
@@ -37,6 +42,8 @@ export const HERO = {
   qiMax: 100,
   qiPerHit: 14,
   hurtInvuln: 0.8,
+  ultimateDamage: 120,
+  ultimateSlowMo: 0.5,
 };
 
 export const ENEMY = {
@@ -73,10 +80,10 @@ export const ENEMY = {
     name: '蒙面剑客',
     health: 320,
     speed: 140,
-    width: 54,
-    height: 92,
+    width: 58,
+    height: 98,
     damage: 16,
-    range: 90,
+    range: 96,
     telegraph: 0.5,
     attackTime: 0.25,
     recover: 0.55,
@@ -84,6 +91,9 @@ export const ENEMY = {
     sweepTime: 0.3,
     dashSpeed: 620,
     dashTime: 0.22,
+    slamTelegraph: 0.85,
+    slamTime: 0.28,
+    slamDamage: 24,
     score: 1200,
   },
 };
@@ -98,8 +108,9 @@ export const WAVES = [
 
 export const BEST_KEY = 'sword-cry-jianghu.best';
 export const UI = {
-  title: '剑鸣江湖',
+  title: '剑啸江湖',
   subtitle: 'Sword Cry in the Jianghu',
+  story: '江湖夜雨十年灯，一剑啸破九重天。',
   start: '开始 Start',
   fightAgain: '再战 Fight again',
   how: [
@@ -107,10 +118,10 @@ export const UI = {
     'W/↑/Space 跳跃 Jump',
     'J/点击 挥剑 Slash',
     'K/Shift 冲刺 Dash',
-    'L 气满剑气 Wave (Qi full)',
+    'L 剑气 / 气满剑啸九天 Wave / Ultimate',
     'P/Esc 暂停 Pause · M 静音 Mute',
   ],
-  win: '江湖已靖 · Victory',
+  win: '胜利 · Victory',
   lose: '力竭倒下 · Defeat',
   health: '生命 Health',
   qi: '真气 Qi',
@@ -119,4 +130,12 @@ export const UI = {
   wave: '波次 Wave',
   boss: '首领 Boss',
   paused: '暂停 Paused',
+};
+
+export const PICKUP = {
+  dropChance: 0.25,
+  radius: 18,
+  qiRestore: 28,
+  healthRestore: 22,
+  life: 8,
 };

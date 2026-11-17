@@ -7,11 +7,16 @@ function base(stats, x, facing) {
     x, y: FIELD.groundY - stats.height,
     vx: 0, vy: 0,
     facing,
-    state: 'approach', // approach, telegraph, attack, recover, dash, dead
+    state: 'approach', // approach, telegraph, attack, recover, dash, dead, slamTele, slam
     timer: 0,
     hitFlash: 0,
+    hitWhite: 0,
+    rearBack: 0,
+    rearDir: 0,
     active: true,
     attackDidHit: false,
+    summonedMinions: false,
+    slamX: 0,
   };
 }
 
@@ -27,16 +32,18 @@ function distToHero(e, hero) {
 export function updateEnemy(e, dt, hero, out) {
   if (!e.active) return;
   if (e.hitFlash > 0) e.hitFlash = Math.max(0, e.hitFlash - dt);
+  if (e.hitWhite > 0) e.hitWhite = Math.max(0, e.hitWhite - dt);
+  if (e.rearBack > 0) e.rearBack = Math.max(0, e.rearBack - dt);
   const dx = distToHero(e, hero);
   const adx = Math.abs(dx);
   e.facing = dx < 0 ? -1 : 1;
-
-  // simple gravity clamp to ground (enemies stay grounded except boss dash visuals)
   e.y = FIELD.groundY - e.height;
-
   const inRange = adx < e.range + hero.width * 0.3;
 
   if (e.type === 'boss') return updateBoss(e, dt, hero, out, dx, adx, inRange);
+
+  const walk = e.state === 'approach' || e.state === 'recover';
+  e.anim = (e.anim || 0) + dt * (walk ? 10 : 4);
 
   if (e.state === 'approach') {
     if (inRange) {
@@ -68,11 +75,14 @@ export function updateEnemy(e, dt, hero, out) {
 
 function updateBoss(e, dt, hero, out, dx, adx, inRange) {
   const ex = e.x + e.width / 2;
+  e.anim = (e.anim || 0) + dt * (e.state === 'approach' ? 8 : 4);
+
   if (e.state === 'approach') {
-    if (adx > 260 && Math.random() < 0.01) {
+    if (adx < 150 && Math.random() < 0.012) {
+      e.state = 'slamTele'; e.timer = e.slamTelegraph; e.attackDidHit = false; e.slamX = hero.x + hero.width/2;
+    } else if (adx > 260 && Math.random() < 0.01) {
       e.state = 'dashTele'; e.timer = 0.35; e.attackDidHit = false;
     } else if (inRange) {
-      // choose slash or sweep
       if (adx < 70 && Math.random() < 0.45) { e.state = 'sweepTele'; e.timer = e.sweepTelegraph; }
       else { e.state = 'telegraph'; e.timer = e.telegraph; }
       e.attackDidHit = false;
@@ -106,6 +116,20 @@ function updateBoss(e, dt, hero, out, dx, adx, inRange) {
       }
     }
     if (e.timer <= 0) { e.state = 'recover'; e.timer = e.recover + 0.15; }
+  } else if (e.state === 'slamTele') {
+    e.timer -= dt;
+    e.slamX = hero.x + hero.width/2; // track for warning marker
+    if (e.timer <= 0) { e.state = 'slam'; e.timer = e.slamTime; e.attackDidHit = false; out.bossSlamImpact = { x: e.slamX }; }
+  } else if (e.state === 'slam') {
+    e.timer -= dt;
+    if (!e.attackDidHit) {
+      const hx = hero.x + hero.width/2;
+      if (Math.abs(hx - e.slamX) < 110 && hero.y + hero.height >= FIELD.groundY - 20) {
+        out.enemyHit = { damage: e.slamDamage, fromX: e.slamX };
+        e.attackDidHit = true;
+      }
+    }
+    if (e.timer <= 0) { e.state = 'recover'; e.timer = e.recover + 0.2; }
   } else if (e.state === 'telegraph') {
     e.timer -= dt;
     if (e.timer <= 0) { e.state = 'attack'; e.timer = e.attackTime; }

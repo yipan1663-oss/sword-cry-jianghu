@@ -1,8 +1,8 @@
-// Boot, loop, and screen state machine for 剑鸣江湖 / Sword Cry in the Jianghu.
+// Boot, loop, and screen state machine for 剑啸江湖 / Sword Cry in the Jianghu.
 import { STEP, BEST_KEY } from './config.js';
 import { createInput, ACT_CONFIRM, ACT_PAUSE, ACT_MUTE } from './input.js';
 import { createAudio } from './audio.js';
-import { createWorld, EVENT_HIT, EVENT_KILL, EVENT_WAVE_CLEAR, EVENT_WIN, EVENT_LOSE, EVENT_PLAYER_HURT, EVENT_BOSS } from './world.js';
+import { createWorld, EVENT_HIT, EVENT_KILL, EVENT_WAVE_CLEAR, EVENT_WIN, EVENT_LOSE, EVENT_PLAYER_HURT, EVENT_BOSS, EVENT_ULTIMATE } from './world.js';
 import { createRenderer, SCREEN_TITLE, SCREEN_PLAY, SCREEN_PAUSED, SCREEN_OVER } from './render.js';
 import { stageShot } from './shots.js';
 
@@ -63,7 +63,7 @@ function runGame() {
     const a = input.takeActions();
     if (a & ACT_MUTE) { muted = audio.toggleMute(); }
     if (screen === SCREEN_TITLE || screen === SCREEN_OVER) {
-      if (a & (ACT_CONFIRM)) start();
+      if (a & ACT_CONFIRM) start();
     } else if (screen === SCREEN_PLAY) {
       if (a & ACT_PAUSE) { screen = SCREEN_PAUSED; announce('暂停 Paused'); }
     } else if (screen === SCREEN_PAUSED) {
@@ -80,6 +80,7 @@ function runGame() {
     if (ev & EVENT_PLAYER_HURT) audio.hurt();
     if (ev & EVENT_WAVE_CLEAR) { audio.waveClear(); announce(`波次 ${world.state.wave} 完成`); }
     if (ev & EVENT_BOSS) { audio.bossDrum(); announce('首领出现 Boss'); }
+    if (ev & EVENT_ULTIMATE) { audio.bossDrum(); audio.waveClear(); announce('剑啸九天!'); }
     if (ev & EVENT_WIN || ev & EVENT_LOSE) endGame();
   }
 
@@ -89,7 +90,6 @@ function runGame() {
     last = now;
     accumulator += dt;
     handleActions();
-    // any user interaction already unlocks; confirm handler calls unlock
     if (screen === SCREEN_TITLE || screen === SCREEN_PLAY) {
       while (accumulator >= STEP) { stepOnce(); accumulator -= STEP; if (screen !== SCREEN_PLAY && screen !== SCREEN_TITLE) break; }
     } else {
@@ -100,7 +100,7 @@ function runGame() {
   }
 
   document.addEventListener('visibilitychange', () => { if (document.hidden && screen === SCREEN_PLAY) { screen = SCREEN_PAUSED; announce('暂停 Paused'); } });
-  announce('剑鸣江湖 Sword Cry in the Jianghu');
+  announce('剑啸江湖 Sword Cry in the Jianghu');
   requestAnimationFrame(frame);
 }
 
